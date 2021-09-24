@@ -1,6 +1,14 @@
 from wildcard.fixpersistentutilities import classfactory
-import pickle
 from io import StringIO
+from io import BytesIO
+
+try:
+    import cPickle as pickle
+    PickleIO = BytesIO
+except ImportError:
+    import pickle
+    PickleIO = StringIO
+
 from ZODB.serialize import ObjectReader
 import os
 
@@ -9,8 +17,8 @@ def NewObjectReader_get_class(self, module, name):
     return classfactory.ClassFactory(self._conn, module, name)
 
 
-def NewObjectReader_get_unpickler(self, pickle):
-    file = StringIO.StringIO(pickle)
+def NewObjectReader_get_unpickler(self, pickle_item):
+    file = PickleIO(pickle_item)        
     unpickler = pickle.Unpickler(file)
     unpickler.persistent_load = self._persistent_load
     factory = classfactory.ClassFactory
